@@ -1,0 +1,17 @@
+# One container: the rrweb recorder (Playwright-driven headless Chrome).
+# The VIEWER runs on your host (python viewer/viewer.py), so the recorder reaches
+# it via host.docker.internal — NOT localhost, which inside the container is the
+# container itself. That host-boundary addressing is the networking lesson.
+services:
+  recorder:
+    build: ./browser
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # resolves the host on Linux too
+    environment:
+      HEALTH_URL: http://host.docker.internal:8000/healthz
+      TARGET_URL: http://host.docker.internal:8000/demo-target
+      EVENT_STREAM_URL: http://host.docker.internal:8000/events
+      RRWEB_URL: http://host.docker.internal:8000/static/viewer-core.min.js
+      LOOP_FOREVER: "1"
+    ports:
+      - "9222:9222"   # Chrome DevTools Protocol, for inspection
