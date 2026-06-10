@@ -1,3 +1,4 @@
+
 # Spur Browser Replay
 
 A working version of the Spur browser-replay exercise. It captures a live Chrome
@@ -8,10 +9,9 @@ The recorder runs in a container. The viewer runs on your host. They talk over
 `host.docker.internal`.
 
 ## Demo
-
-<video src="https://github.com/chiragchadha1/spur-browser-replay/raw/main/demo.mp4" controls width="100%"></video>
-
-If the player doesn't load inline, [open the demo here](demo.mp4).
+<p align="center" width="100%">
+<video src="https://github.com/user-attachments/assets/846a48de-2fa9-4f87-b3db-f94453452c4e" controls width="80%"></video>
+</p>
 
 ## How I built this
 
