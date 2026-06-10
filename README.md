@@ -7,6 +7,12 @@ to a viewer, and replays the session with a scrub bar.
 The recorder runs in a container. The viewer runs on your host. They talk over
 `host.docker.internal`.
 
+## Demo
+
+<video src="https://github.com/chiragchadha1/spur-browser-replay/raw/main/demo.mp4" controls width="100%"></video>
+
+If the player doesn't load inline, [open the demo here](demo.mp4).
+
 ## How I built this
 
 I didn't get this working during the live interview. Afterward I took the Granola
