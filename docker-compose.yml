@@ -1,7 +1,4 @@
-# One container: the rrweb recorder (Playwright-driven headless Chrome).
-# The VIEWER runs on your host (python viewer/viewer.py), so the recorder reaches
-# it via host.docker.internal — NOT localhost, which inside the container is the
-# container itself. That host-boundary addressing is the networking lesson.
+# Recorder container. The viewer runs on the host, reached via host.docker.internal.
 services:
   recorder:
     build: ./browser
@@ -14,4 +11,4 @@ services:
       RRWEB_URL: http://host.docker.internal:8000/static/viewer-core.min.js
       LOOP_FOREVER: "1"
     ports:
-      - "9222:9222"   # Chrome DevTools Protocol, for inspection
+      - "9222:9222"   # CDP, for inspection

@@ -30,19 +30,19 @@ working, debugged system, and explain every fix.
 Viewer on your host:
 
 ```bash
-pip install -r python/viewer/requirements.txt
-python python/viewer/viewer.py            # http://localhost:8000
+pip install -r viewer/requirements.txt
+python viewer/viewer.py            # http://localhost:8000
 ```
 
 Recorder in a container (separate terminal):
 
 ```bash
-docker compose -f python/docker-compose.yml up --build
+docker compose up --build
 ```
 
 Open <http://localhost:8000>. The replay builds up live as the recorder types
 "hello Spur", clicks the button (the box slides), and scrolls. Use the Pause button
-and the slider to scrub. Stop with `docker compose -f python/docker-compose.yml down`.
+and the slider to scrub. Stop with `docker compose down`.
 
 Start the viewer before the recorder so the first full snapshot lands in a fresh store.
 

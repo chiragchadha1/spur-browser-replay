@@ -1,18 +1,5 @@
-"""
-Spur Browser Replay — Viewer service (runs on the host).
-
-Receives rrweb events from the recorder container, stores an append-only history,
-fans them out live over SSE, and replays them with rrweb's core Replayer plus a
-small custom scrub bar.
-
-Why the core Replayer instead of rrweb-player? The starter used
-`new rrwebPlayer.Replayer(...)`, which is wrong twice over: `Replayer` lives on
-`window.rrweb`, and the rrweb-player UMD global is a namespace object, not a bare
-constructor. On top of that, the rrweb-player v2 Svelte UMD build did not mount its
-Replayer in this setup (it rendered the shell but never created the iframe). So we
-drive `window.rrweb.Replayer` directly — fewer moving parts, fully under our control,
-and it makes the data model obvious: events in, scrubbable DOM replay out.
-"""
+"""Viewer: stores rrweb events from the recorder, streams them live over SSE,
+and serves a replay built on rrweb's Replayer."""
 
 import json
 import queue
@@ -21,7 +8,6 @@ from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 
-# Append-only history + live subscriber queues. "Store first, then broadcast."
 events: list[dict] = []
 events_lock = threading.Lock()
 subscribers: set[queue.Queue] = set()
@@ -30,7 +16,6 @@ subscribers_lock = threading.Lock()
 
 @app.route("/events", methods=["POST"])
 def receive_event():
-    """Receive a single rrweb event from the browser page (via sendBeacon)."""
     raw = request.get_data(as_text=True)
     if not raw:
         return "", 204
@@ -42,23 +27,19 @@ def receive_event():
 
     with events_lock:
         events.append(event)
-        count = len(events)
-    app.logger.info("event #%d type=%s", count, event.get("type"))
-
     _publish(event)
     return "", 204
 
 
 @app.route("/api/events", methods=["GET"])
 def get_all_events():
-    """Return the full event history so a late viewer can hydrate."""
     with events_lock:
         return jsonify(list(events))
 
 
+# Replay history first, then push each new event as it arrives.
 @app.route("/stream", methods=["GET"])
 def stream():
-    """Server-Sent Events: replay history, then push every new event live."""
     def gen():
         with events_lock:
             backlog = list(events)
@@ -93,8 +74,6 @@ def healthz():
 
 @app.route("/demo-target")
 def demo_target():
-    """A controlled page for the recorder to capture. The scripted driver types,
-    clicks (the box slides via CSS), and scrolls — producing rich rrweb mutations."""
     return DEMO_TARGET_HTML
 
 
@@ -134,9 +113,7 @@ VIEWER_HTML = """<!doctype html>
   <head>
     <meta charset="utf-8" />
     <title>Spur Browser Replay Viewer</title>
-    <!-- Served under a neutral name: privacy/ad blockers ship rules that match
-         "rrweb.min.js" (rrweb is a session-recording lib), which silently blocks the
-         script and leaves the global undefined. -->
+    <!-- neutral filename so content/ad blockers don't match "rrweb.min.js" -->
     <link rel="stylesheet" href="/static/viewer-core.css" />
     <style>
       body { margin: 0; font-family: Inter, system-ui; background: #020617; color: #e2e8f0; }
@@ -286,5 +263,5 @@ VIEWER_HTML = """<!doctype html>
 
 
 if __name__ == "__main__":
-    print("Viewer on http://0.0.0.0:8000  (events: POST /events, replay: GET /)")
+    print("viewer on http://localhost:8000")
     app.run(host="0.0.0.0", port=8000, threaded=True, debug=False)

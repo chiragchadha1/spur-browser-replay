@@ -1,23 +1,5 @@
-"""
-Spur Browser Replay — Browser + driver service.
-
-Evolved from the starter `launch_browser.py`. Changes that make it actually work
-end-to-end in a two-container setup:
-
-  * EVENT_STREAM_URL / TARGET_URL / RRWEB_URL come from the environment and point
-    at the *viewer service name* (http://viewer:8000/...), not localhost. This is
-    the Docker networking gotcha: the page runs in the browser container, so
-    "localhost" there is the browser container, not the viewer.
-  * rrweb is injected from the viewer's vendored copy, so the demo never depends
-    on a CDN being reachable at record time.
-  * We wait for the viewer to be reachable before navigating (compose start order
-    is not readiness).
-  * A scripted Playwright driver performs real interactions (type, click, scroll)
-    so the replay shows actual behavior instead of an idle snapshot.
-
-Playwright drives Chrome over the Chrome DevTools Protocol, so this is the CDP
-control plane; rrweb is the in-page capture plane that ships events back out.
-"""
+"""Recorder: launches headless Chrome, injects rrweb, and drives scripted
+interactions. Captured events are beaconed to the viewer."""
 
 import asyncio
 import os
@@ -27,14 +9,14 @@ from playwright.async_api import async_playwright
 
 TARGET_URL = os.getenv("TARGET_URL", "http://localhost:8000/demo-target")
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://localhost:8000/events")
-RRWEB_URL = os.getenv("RRWEB_URL", "http://localhost:8000/static/rrweb.min.js")
+RRWEB_URL = os.getenv("RRWEB_URL", "http://localhost:8000/static/viewer-core.min.js")
 CDP_PORT = int(os.getenv("CDP_PORT", "9222"))
 HEALTH_URL = os.getenv("HEALTH_URL", "http://localhost:8000/healthz")
 LOOP_FOREVER = os.getenv("LOOP_FOREVER", "1") == "1"
 
 
 def wait_for_viewer(url: str, attempts: int = 60, delay: float = 1.0) -> None:
-    """Block until the viewer service answers, so we don't navigate too early."""
+    """Wait for the viewer before navigating (compose start order isn't readiness)."""
     import time
     for i in range(attempts):
         try:
@@ -73,7 +55,7 @@ async def inject_rrweb(page) -> None:
 
 
 async def run_demo_interactions(page) -> None:
-    """Scripted driver: real interactions that produce a compelling replay."""
+    """Type, click, and scroll so the replay shows real behavior."""
     await asyncio.sleep(0.6)
     await page.fill("#name", "")
     await page.type("#name", "hello Spur", delay=90)   # per-keystroke input events
