@@ -14,16 +14,15 @@ transcript of our session and used it to find where my understanding actually br
 down: the CDP/rrweb boundary, the Docker networking, and how the viewer should be
 separated from browser control.
 
-Then I sat with it. I used Claude Code on a high-reasoning model (Opus 4.8), plus a
+I used Claude Code on a high-reasoning model (Opus 4.8), plus a
 "learn" skill that quizzes you on a change until you can explain the why, the what,
 and the how (see [LEARN_SKILL.md](LEARN_SKILL.md)). The loop was: form a hypothesis
 about why something was blank or failing, instrument the boundary, read the evidence,
 then fix it. The "What was broken" section below is the real output of that. Every row
 is something I got wrong and then understood.
 
-I'm being upfront that I worked through this with Claude Code. That's how I work. What
-I want to show is that I can take a transcript of my own gaps and close them into a
-working, debugged system, and explain every fix.
+I'm being upfront that I worked through this with Claude Code (which is how I typically work). What
+I want to demonstrate is that I can learn from my knowledge gaps.
 
 ## Run it
 
@@ -83,7 +82,7 @@ replays without it), `3` IncrementalSnapshot (the mutations, input, mouse, scrol
 In-memory storage would become compressed rrweb chunks in object storage with metadata
 in a database. The in-process SSE fan-out would become Redis or a managed pub/sub for
 multiple instances. I'd add per-session Chrome limits, backpressure and sampling on
-high-volume events, input masking on by default, and reconnect-from-last-index so a
+high-volume events, input masking on by default (for sensitive info), and reconnect-from-last-index so a
 viewer can rejoin mid-session. rrweb has blind spots (canvas, WebGL, cross-origin
 iframes) that I'd cover with a screenshot or video fallback. For mostly-idle agent
 sessions, rrweb is far cheaper than video, which is why it's the right default.
